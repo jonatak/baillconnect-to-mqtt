@@ -30,23 +30,28 @@ type result struct {
 }
 
 type Processor struct {
-	service       *application.HVACService
-	handler       *Handler
-	mqttConnected bool
+	service         *application.HVACService
+	handler         *Handler
+	mqttConnected   bool
+	refreshInterval time.Duration
 }
 
 const refreshInterval = 60 * time.Second
 
-func NewProcessor(handler *Handler, service *application.HVACService) *Processor {
+func NewProcessor(handler *Handler, service *application.HVACService, interval time.Duration) *Processor {
+	if interval <= 0 {
+		interval = refreshInterval
+	}
 	return &Processor{
-		service: service,
-		handler: handler,
+		service:         service,
+		handler:         handler,
+		refreshInterval: interval,
 	}
 }
 
 func (p *Processor) Run(ctx context.Context) error {
 	defer p.handler.Close()
-	ticker := time.NewTicker(refreshInterval)
+	ticker := time.NewTicker(p.refreshInterval)
 	jobCh := make(chan job, 10)
 	resultCh := make(chan result)
 	defer close(jobCh)
