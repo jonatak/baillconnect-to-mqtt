@@ -16,9 +16,21 @@ This is a personal project, but the main flows are now usable:
 
 ## Install
 
+### Home Assistant Add-on
+
+This repository can be added directly as a Home Assistant add-on repository:
+
+```text
+https://github.com/jonatak/baillconnect-to-mqtt
+```
+
+In Home Assistant OS or Supervised, open **Settings > Add-ons > Add-on Store**, add this repository URL, then install **Baillconnect to MQTT**.
+
+Add-on documentation lives in [`baillconnect-to-mqtt/DOCS.md`](baillconnect-to-mqtt/DOCS.md).
+
 ### GitHub Releases (latest binary)
 
-On Linux or macOS (amd64 or arm64), install the latest published release into `~/.local/bin` (or `XDG_BIN_HOME` if set):
+On Linux or macOS (amd64, arm64, or armv7), install the latest published release into `~/.local/bin` (or `XDG_BIN_HOME` if set):
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/jonatak/baillconnect-to-mqtt/main/scripts/install-latest-release.sh | bash
@@ -54,7 +66,30 @@ make install
 
 ## Configuration
 
-The application reads Bailup credentials and regulation id from environment variables:
+The Home Assistant add-on passes configuration through `/data/options.json`.
+
+For standalone binary usage, the same JSON shape can be provided with `--config`:
+
+```json
+{
+  "baillconnect": {
+    "email": "you@example.com",
+    "password": "your-password",
+    "regulation": "your-regulation-id"
+  },
+  "mqtt": {
+    "host": "mqtt.example.local",
+    "port": 1883,
+    "username": "mqtt-user",
+    "password": "mqtt-password",
+    "topic_prefix": "custom_bailup",
+    "client_id": "baillconnect-to-mqtt"
+  },
+  "poll_interval_seconds": 30
+}
+```
+
+Environment variables are also supported:
 
 ```sh
 export BAILUP_EMAIL="you@example.com"
@@ -81,6 +116,12 @@ Run the MQTT / Home Assistant bridge:
 
 ```sh
 baillconnect-to-mqtt
+```
+
+Run with a config file:
+
+```sh
+baillconnect-to-mqtt --config ./options.json
 ```
 
 The bridge:
@@ -155,6 +196,12 @@ Run the bridge locally:
 ```sh
 make build
 ./bin/baillconnect-to-mqtt
+```
+
+Run with a local config file:
+
+```sh
+./bin/baillconnect-to-mqtt --config ./options.json
 ```
 
 ## Deployment
