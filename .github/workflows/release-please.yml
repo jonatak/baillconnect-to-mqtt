@@ -13,6 +13,7 @@ jobs:
       pull-requests: write
     outputs:
       release_created: ${{ steps.run.outputs.release_created }}
+      tag_name: ${{ steps.run.outputs.tag_name }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: run
@@ -21,40 +22,10 @@ jobs:
           manifest-file: .github/.release-please-manifest.json
           config-file: .github/release-please-config.json
 
-  goreleaser:
-    if: ${{ needs.track-release.outputs.release_created }}
-    needs:
-      - track-release
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      packages: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-tags: true
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: 'go.mod'
-
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v7
-        with:
-          distribution: goreleaser
-          version: '~> v2'
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   sync-addon-changelog:
     if: ${{ needs.track-release.outputs.release_created }}
     needs:
       - track-release
-      - goreleaser
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -76,5 +47,36 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add baillconnect-to-mqtt/CHANGELOG.md
-          git commit -m "chore: sync add-on changelog [skip ci]"
+          git commit -m "chore: sync add-on changelog" -m "[skip ci]"
           git push
+
+  goreleaser:
+    if: ${{ needs.track-release.outputs.release_created }}
+    needs:
+      - track-release
+      - sync-addon-changelog
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.track-release.outputs.tag_name }}
+          fetch-tags: true
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          distribution: goreleaser
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
