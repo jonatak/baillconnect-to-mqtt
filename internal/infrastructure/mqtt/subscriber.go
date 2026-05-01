@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/jonatak/go-bailup/internal/application"
-	"github.com/jonatak/go-bailup/internal/domain"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/application"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/domain"
 )
 
 type subscription struct {

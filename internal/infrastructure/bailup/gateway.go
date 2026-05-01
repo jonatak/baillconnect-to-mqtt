@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jonatak/go-bailup/internal/application"
-	"github.com/jonatak/go-bailup/internal/domain"
-	"github.com/jonatak/go-bailup/internal/infrastructure/bailup/model"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/application"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/domain"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/infrastructure/bailup/model"
 )
 
 var _ application.HVACSystemGateway = (*Gateway)(nil)

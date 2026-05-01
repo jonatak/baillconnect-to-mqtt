@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jonatak/go-bailup/internal/application"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/application"
 )
 
 type RoomOn struct {

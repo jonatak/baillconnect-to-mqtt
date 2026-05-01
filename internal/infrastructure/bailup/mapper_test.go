@@ -3,10 +3,10 @@ package bailup
 import (
 	"testing"
 
-	"github.com/jonatak/go-bailup/internal/application"
-	"github.com/jonatak/go-bailup/internal/domain"
-	"github.com/jonatak/go-bailup/internal/infrastructure/bailup/command"
-	"github.com/jonatak/go-bailup/internal/infrastructure/bailup/model"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/application"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/domain"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/infrastructure/bailup/command"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/infrastructure/bailup/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

@@ -6,9 +6,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/jonatak/go-bailup/internal/application"
-	"github.com/jonatak/go-bailup/internal/infrastructure/bailup"
-	"github.com/jonatak/go-bailup/internal/infrastructure/mqtt"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/application"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/infrastructure/bailup"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/infrastructure/mqtt"
 )
 
 func NewHVACService() (*application.HVACService, error) {

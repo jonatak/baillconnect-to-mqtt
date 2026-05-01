@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jonatak/go-bailup/internal/application"
-	"github.com/jonatak/go-bailup/internal/domain"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/application"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/domain"
 )
 
 type TemperatureTarget struct {

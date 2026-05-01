@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/jonatak/go-bailup/internal/version"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/version"
 )
 
 type VersionCommand struct {

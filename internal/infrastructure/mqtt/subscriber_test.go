@@ -3,7 +3,7 @@ package mqtt
 import (
 	"testing"
 
-	"github.com/jonatak/go-bailup/internal/application"
+	"github.com/jonatak/baillconnect-to-mqtt/internal/application"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
