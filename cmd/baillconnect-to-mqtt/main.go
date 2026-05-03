@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"log/slog"
@@ -39,7 +40,10 @@ func main() {
 		os.Exit(1)
 	}
 	if err := server.Run(ctx); err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		if !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
+			slog.Error(err.Error())
+			os.Exit(1)
+		}
 	}
+	slog.Info("exited")
 }
