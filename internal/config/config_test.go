@@ -10,6 +10,8 @@ import (
 )
 
 func TestLoadReadsOptionsJSON(t *testing.T) {
+	clearConfigEnv(t)
+
 	dir := t.TempDir()
 	path := filepath.Join(dir, "options.json")
 	err := os.WriteFile(path, []byte(`{
@@ -46,6 +48,8 @@ func TestLoadReadsOptionsJSON(t *testing.T) {
 }
 
 func TestLoadFallsBackToLegacyEnvironment(t *testing.T) {
+	clearConfigEnv(t)
+
 	t.Setenv("BAILUP_EMAIL", "env@example.com")
 	t.Setenv("BAILUP_PASS", "env-secret")
 	t.Setenv("BAILUP_REGULATION", "env-regulation")
@@ -70,4 +74,27 @@ func TestLoadFallsBackToLegacyEnvironment(t *testing.T) {
 	assert.Equal(t, "env-prefix", cfg.MQTT.TopicPrefix)
 	assert.Equal(t, "env-client", cfg.MQTT.ClientID)
 	assert.Equal(t, 90, cfg.PollInterval)
+}
+
+func clearConfigEnv(t *testing.T) {
+	t.Helper()
+
+	for _, key := range []string{
+		"BAILUP_EMAIL",
+		"BAILLCONNECT_EMAIL",
+		"BAILUP_PASS",
+		"BAILUP_PASSWORD",
+		"BAILLCONNECT_PASSWORD",
+		"BAILUP_REGULATION",
+		"BAILLCONNECT_REGULATION",
+		"MQTT_HOST",
+		"MQTT_PORT",
+		"MQTT_USERNAME",
+		"MQTT_PASSWORD",
+		"MQTT_TOPIC_PREFIX",
+		"MQTT_CLIENT_ID",
+		"POLL_INTERVAL_SECONDS",
+	} {
+		t.Setenv(key, "")
+	}
 }
