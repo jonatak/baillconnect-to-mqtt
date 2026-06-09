@@ -11,13 +11,18 @@ import (
 	"github.com/jonatak/baillconnect-to-mqtt/internal/mqtt"
 )
 
-func NewHVACService(cfg config.Config) (*application.HVACService, error) {
+const startupTimeout = 30 * time.Second
+
+func NewHVACService(ctx context.Context, cfg config.Config) (*application.HVACService, error) {
 	if cfg.Baillconnect.Email == "" || cfg.Baillconnect.Password == "" || cfg.Baillconnect.Regulation == "" {
 		return nil, ErrInit
 	}
 
 	gateway := bailup.NewGateway(cfg.Baillconnect.Email, cfg.Baillconnect.Password, cfg.Baillconnect.Regulation)
-	err := gateway.Connect(context.Background())
+	ctx, cancel := context.WithTimeout(ctx, startupTimeout)
+	defer cancel()
+
+	err := gateway.Connect(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("connect HVAC gateway: %w", err)
 	}
@@ -25,13 +30,17 @@ func NewHVACService(cfg config.Config) (*application.HVACService, error) {
 }
 
 func NewMQTTServer(
+	ctx context.Context,
 	system *application.HVACService,
 	cfg config.Config,
 ) (*mqtt.Processor, error) {
 
-	state, err := system.CurrentState(context.Background())
+	ctx, cancel := context.WithTimeout(ctx, startupTimeout)
+	defer cancel()
+
+	state, err := system.CurrentState(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("load initial HVAC state: %w", err)
 	}
 
 	if cfg.MQTT.Host == "" || cfg.MQTT.Username == "" || cfg.MQTT.Password == "" || cfg.MQTT.TopicPrefix == "" || cfg.MQTT.ClientID == "" || cfg.MQTT.Port <= 0 {

@@ -22,28 +22,35 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
+	slog.Info("loading configuration")
 	cfg, err := config.Load(*configPath)
 	if err != nil {
-		slog.Error(err.Error())
+		slog.Error("configuration failed", "error", err)
 		os.Exit(1)
 	}
 
-	service, err := bootstrap.NewHVACService(cfg)
+	slog.Info("connecting to baillconnect")
+	service, err := bootstrap.NewHVACService(ctx, cfg)
 
 	if err != nil {
-		slog.Error(err.Error())
+		slog.Error("baillconnect service initialization failed", "error", err)
 		os.Exit(1)
 	}
-	server, err := bootstrap.NewMQTTServer(service, cfg)
+
+	slog.Info("initializing mqtt server")
+	server, err := bootstrap.NewMQTTServer(ctx, service, cfg)
 	if err != nil {
-		slog.Error(err.Error())
+		slog.Error("mqtt server initialization failed", "error", err)
 		os.Exit(1)
 	}
+
+	slog.Info("running mqtt processor")
 	if err := server.Run(ctx); err != nil {
 		if !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
-			slog.Error(err.Error())
+			slog.Error("mqtt processor failed", "error", err)
 			os.Exit(1)
 		}
+		slog.Info("mqtt processor stopped", "error", err)
 	}
 	slog.Info("exited")
 }
