@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/jonatak/baillconnect-to-mqtt/internal/application"
@@ -87,6 +88,12 @@ func (g *Gateway) ApplyResolvedIntent(ctx context.Context, intent application.Re
 
 func (g *Gateway) withReconnect(ctx context.Context, op func() error) error {
 	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+
 		err := op()
 		if err == nil {
 			return nil
@@ -95,14 +102,17 @@ func (g *Gateway) withReconnect(ctx context.Context, op func() error) error {
 			return err
 		}
 
+		slog.Warn("baillconnect operation failed because the session is disconnected, reconnecting", "error", err)
 		if connectErr := g.client.Connect(ctx); connectErr != nil {
+			slog.Warn("baillconnect reconnect failed", "error", connectErr)
 			select {
 			case <-time.After(1 * time.Second):
 			case <-ctx.Done():
-				return application.ErrGatewayUnavailable
+				return ctx.Err()
 			}
 			continue
 		}
+		slog.Info("baillconnect reconnect succeeded")
 	}
 }
 

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 
 	"github.com/jonatak/baillconnect-to-mqtt/internal/bailup/command"
 	"github.com/jonatak/baillconnect-to-mqtt/internal/bailup/model"
@@ -38,9 +39,15 @@ func (b *Bailup) Execute(ctx context.Context, cmd command.JSONCommand) (*model.S
 	for k, v := range baseHeader() {
 		req.Header.Set(k, v)
 	}
+	req.Header.Set("Referer", fmt.Sprintf("%s/client/regulations/%s", bailupWebsite, b.regulation))
+
 	xsrf, err := b.CurrentXSRFToken()
 	if err != nil {
 		return nil, NewBailupError("could not read current xsrf token", err)
+	}
+	xsrf, err = url.QueryUnescape(xsrf)
+	if err != nil {
+		return nil, NewBailupError("could not decode current xsrf token", err)
 	}
 
 	req.Header.Set("X-Csrf-Token", b.csrf)
@@ -59,7 +66,7 @@ func (b *Bailup) Execute(ctx context.Context, cmd command.JSONCommand) (*model.S
 	if resp.StatusCode != http.StatusOK {
 		return nil, NewBailupError(
 			fmt.Sprintf("could not fetch regulation state: unexpected status %d", resp.StatusCode),
-			ErrDisconnected,
+			nil,
 		)
 	}
 

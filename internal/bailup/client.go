@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/cookiejar"
+	"time"
 )
+
+const httpClientTimeout = 20 * time.Second
 
 type Bailup struct {
 	email      string
@@ -24,7 +27,10 @@ func NewBailup(email, password, regulation string) *Bailup {
 		email:      email,
 		password:   password,
 		regulation: regulation,
-		client:     &http.Client{Jar: jar},
+		client: &http.Client{
+			Jar:     jar,
+			Timeout: httpClientTimeout,
+		},
 	}
 }
 

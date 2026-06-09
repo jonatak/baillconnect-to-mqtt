@@ -34,6 +34,13 @@ func (b *Bailup) Connect(ctx context.Context) error {
 		}
 	}()
 
+	if resp.StatusCode >= http.StatusBadRequest {
+		return NewBailupError(
+			fmt.Sprintf("login page failed: unexpected status %d", resp.StatusCode),
+			nil,
+		)
+	}
+
 	doc, err := html.Parse(resp.Body)
 	if err != nil {
 		return NewBailupError("could not parse login page", err)
@@ -62,6 +69,9 @@ func (b *Bailup) Connect(ctx context.Context) error {
 	b.csrf = csrf
 	if err := b.login(ctx, token); err != nil {
 		return NewBailupError("could not establish authenticated session", err)
+	}
+	if err := b.loadRegulationPage(ctx); err != nil {
+		return NewBailupError("could not load regulation page", err)
 	}
 
 	return nil
@@ -115,6 +125,59 @@ func (b *Bailup) login(ctx context.Context, token string) error {
 	if !found {
 		return errors.New("login failed: XSRF token not found")
 	}
+
+	return nil
+}
+
+func (b *Bailup) loadRegulationPage(ctx context.Context) error {
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf("%s/client/regulations/%s", bailupWebsite, b.regulation),
+		nil,
+	)
+	if err != nil {
+		return NewBailupError("could not build regulation page request", err)
+	}
+
+	resp, err := b.client.Do(req)
+	if err != nil {
+		return NewBailupError("could not load regulation page", err)
+	}
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			slog.Error("could not close response body", "error", err)
+		}
+	}()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return NewBailupError(
+			fmt.Sprintf("regulation page failed: unexpected status %d", resp.StatusCode),
+			nil,
+		)
+	}
+
+	if resp.Request != nil && resp.Request.URL != nil &&
+		resp.Request.URL.Path == "/client/connexion" {
+		return errors.New("regulation page failed: redirected to login page")
+	}
+
+	doc, err := html.Parse(resp.Body)
+	if err != nil {
+		return NewBailupError("could not parse regulation page", err)
+	}
+
+	csrfNode := htmlquery.FindOne(doc, "//meta[@name=\"csrf-token\"]/@content")
+	if csrfNode == nil {
+		return NewBailupError("regulation page did not contain csrf token", nil)
+	}
+
+	csrf := htmlquery.InnerText(csrfNode)
+	if csrf == "" {
+		return NewBailupError("regulation page csrf token was empty", nil)
+	}
+
+	b.csrf = csrf
 
 	return nil
 }
