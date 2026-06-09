@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.5](https://github.com/jonatak/baillconnect-to-mqtt/compare/v1.2.4...v1.2.5) (2026-06-09)
+
+
+### Bug Fixes
+
+* update login after website update ([7d616cd](https://github.com/jonatak/baillconnect-to-mqtt/commit/7d616cd9e8fd9ee1b21c7ccc5502354bba62a60e))
+
 ## [1.2.4](https://github.com/jonatak/baillconnect-to-mqtt/compare/v1.2.3...v1.2.4) (2026-05-03)
 
 
